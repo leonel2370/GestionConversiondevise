@@ -1,0 +1,30 @@
+# ===== Données sensibles — NE JAMAIS COMMITTER =====
+.env
+*.env.local
+
+# ===== Maven / Java =====
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# ===== IDE =====
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+
+# ===== Outils agents (local) =====
+.agents/
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Logs =====
+*.log
+logs/
