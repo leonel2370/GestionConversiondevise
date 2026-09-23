@@ -21,6 +21,7 @@ target/
 
 # ===== Outils agents (local) =====
 .agents/
+.freebuff/
 src.scaffold-root/
 
 # ===== OS =====
