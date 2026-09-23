@@ -44,15 +44,25 @@ cp .env.example .env
 
 ### Avec Maven
 
+> **Note** : si Maven Central vous limite (erreur `HTTP 429`), ajoutez `-s .mvn/local-mirror-settings.xml`
+> à chaque commande Maven, ou supprimez ce fichier une fois le quota levé.
+
 ```bash
 mvn spring-boot:run
 ```
+
+> **Astuce** : le bac à sable termine les processus d'arrière-plan à la fin de chaque commande du
+> terminal, ce qui peut tuer l'API démarrée avec `mvn spring-boot:run`. Dans un terminal classique,
+> elle reste active tant que vous ne l'arrêtez pas (Ctrl+C).
 
 ### Avec Docker
 
 ```bash
 docker compose up --build
 ```
+
+Le healthcheck du conteneur utilise `/dev/tcp` de bash : aucune dépendance à `curl` n'est requise
+dans l'image JRE.
 
 ## Tester l'API avec Swagger
 
