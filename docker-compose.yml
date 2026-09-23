@@ -1,0 +1,20 @@
+services:
+  api-conversion:
+    build: .
+    image: conversion-devises:0.0.1
+    container_name: api-conversion-devises
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    environment:
+      # Le fichier .env (ignore par git) fournit les valeurs sensibles.
+      # Voir .env.example pour la liste des variables attendues.
+      EXCHANGE_RATE_API_KEY: ${EXCHANGE_RATE_API_KEY:?Definissez EXCHANGE_RATE_API_KEY dans le fichier .env}
+      EXCHANGE_RATE_API_BASE_URL: ${EXCHANGE_RATE_API_BASE_URL:-https://v6.exchangerate-api.com/v6}
+      EXCHANGE_RATE_CACHE_MINUTES: ${EXCHANGE_RATE_CACHE_MINUTES:-60}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/v3/api-docs >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s

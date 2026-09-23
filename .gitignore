@@ -4,6 +4,7 @@
 
 # ===== Maven / Java =====
 target/
+.mvn/
 *.class
 *.jar
 !.mvn/wrapper/maven-wrapper.jar
@@ -20,6 +21,8 @@ target/
 
 # ===== Outils agents (local) =====
 .agents/
+.freebuff/
+src.scaffold-root/
 
 # ===== OS =====
 .DS_Store
