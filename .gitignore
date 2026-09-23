@@ -21,6 +21,7 @@ target/
 
 # ===== Outils agents (local) =====
 .agents/
+src.scaffold-root/
 
 # ===== OS =====
 .DS_Store
