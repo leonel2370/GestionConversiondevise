@@ -8,11 +8,15 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.net.URI;
 import java.time.Instant;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Gestion centralisee des erreurs de l API.
@@ -22,6 +26,8 @@ import java.time.Instant;
 @RestControllerAdvice
 public class GestionnaireExceptionsGlobal {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(GestionnaireExceptionsGlobal.class);
+
     @ExceptionHandler(DeviseInvalideException.class)
     public ProblemDetail deviseInvalide(DeviseInvalideException exception) {
         return construire(HttpStatus.BAD_REQUEST, "Devise invalide", exception.getMessage());
@@ -29,6 +35,7 @@ public class GestionnaireExceptionsGlobal {
 
     @ExceptionHandler(ApiExterneException.class)
     public ProblemDetail apiExterne(ApiExterneException exception) {
+        LOGGER.error("Echec d appel a l API de taux de change", exception);
         return construire(HttpStatus.BAD_GATEWAY, "Erreur de l API de taux de change", exception.getMessage());
     }
 
@@ -64,6 +71,16 @@ public class GestionnaireExceptionsGlobal {
         return construire(HttpStatus.BAD_REQUEST, "Parametre invalide", message);
     }
 
+    /** Echec de la validation integree des parametres de methode (Spring 6.1+). */
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ProblemDetail validationParametre(HandlerMethodValidationException exception) {
+        String message = exception.getAllErrors().stream()
+                .map(erreur -> erreur.getDefaultMessage())
+                .findFirst()
+                .orElse("Parametres de requete invalides");
+        return construire(HttpStatus.BAD_REQUEST, "Parametre invalide", message);
+    }
+
     /** Parametre de type errone (ex : montant=abc). */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ProblemDetail typeParametreInvalide(MethodArgumentTypeMismatchException exception) {
@@ -82,6 +99,7 @@ public class GestionnaireExceptionsGlobal {
     /** Filet de securite : toute erreur non prevue renvoie un probleme 500 homogene. */
     @ExceptionHandler(Exception.class)
     public ProblemDetail erreurInattendue(Exception exception) {
+        LOGGER.error("Erreur inattendue de l API", exception);
         return construire(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur interne",
                 "Une erreur inattendue s est produite. Reessayez plus tard.");
     }

@@ -8,6 +8,7 @@ import com.k48.leonel.conversiondevises.exception.DeviseInvalideException;
 import com.k48.leonel.conversiondevises.exception.MontantInvalideException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -134,6 +135,17 @@ class ConversionServiceTest {
         assertThatThrownBy(() -> service.obtenirTaux("USD", "EUR"))
                 .isInstanceOf(ApiExterneException.class)
                 .hasMessageContaining("quota-exceeded");
+    }
+
+    @Test
+    @DisplayName("l appel externe cible le chemin /{cle}/latest/{devise}")
+    void cheminAppelExterneCorrect() throws InterruptedException {
+        enregistrerReponseTauxOk();
+
+        service.obtenirTaux("USD", "EUR");
+
+        RecordedRequest requete = serveurApi.takeRequest();
+        assertThat(requete.getPath()).isEqualTo("/v6/cle-de-test/latest/USD");
     }
 
     @Test

@@ -9,6 +9,8 @@ import com.k48.leonel.conversiondevises.dto.TauxReponse;
 import com.k48.leonel.conversiondevises.exception.ApiExterneException;
 import com.k48.leonel.conversiondevises.exception.DeviseInvalideException;
 import com.k48.leonel.conversiondevises.exception.MontantInvalideException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -35,6 +37,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Service
 public class ConversionService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConversionService.class);
 
     /** Devises ISO 4217 non echangeables (metaux, codes reserves, hors ligne). */
     private static final Set<String> DEVISES_NON_ECHANGEABLES = Set.of(
@@ -178,7 +182,7 @@ public class ConversionService {
     private JsonNode appelerApi(String chemin) {
         try {
             JsonNode reponse = webClient.get()
-                    .uri(cleApi + chemin)
+                    .uri("/" + cleApi + chemin)
                     .retrieve()
                     .bodyToMono(JsonNode.class)
                     .block(DELAI_APPEL);
@@ -191,6 +195,9 @@ public class ConversionService {
         } catch (WebClientRequestException exception) {
             throw new ApiExterneException("Impossible de joindre l API de taux de change", exception);
         } catch (WebClientResponseException exception) {
+            LOGGER.error("Appel externe en echec : statut={}, location={}, corps={}",
+                    exception.getStatusCode(), exception.getHeaders().getLocation(),
+                    tronquer(exception.getResponseBodyAsString()));
             throw new ApiExterneException(
                     "L API de taux de change a renvoye une erreur %d".formatted(exception.getStatusCode().value()),
                     exception);
@@ -216,6 +223,13 @@ public class ConversionService {
         if (montant.compareTo(MONTANT_MAXIMAL) > 0) {
             throw new MontantInvalideException("Le montant depasse la limite autorisee");
         }
+    }
+
+    private String tronquer(String texte) {
+        if (texte == null) {
+            return "";
+        }
+        return texte.length() <= 200 ? texte : texte.substring(0, 200) + "...";
     }
 
     /**
